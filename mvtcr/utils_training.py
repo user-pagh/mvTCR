@@ -118,7 +118,7 @@ def load_model(adata, path_model):
 #                         optimization_mode_params, label_key)
     
 #     if available_gpu:
-#         model.load(path_model, weights_only=False)
+#         model.load(path_model, weights_only=False)   #Alternatively: model.load_state_dict(torch.load(PATH, weights_only=True))
 #     else:
 #         model.load(path_model, map_location=torch.device('cpu'), weights_only=False)
         
