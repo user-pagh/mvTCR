@@ -2,8 +2,11 @@ from setuptools import setup, find_packages
 from pathlib import Path
 
 this_directory = Path(__file__).parent
-long_description = (this_directory / "pypi_description.md").read_text()
-
+try:
+    long_description = (this_directory / "pypi_description.md").read_text()
+except FileNotFoundError:
+    long_description = "Description not available."
+    
 setup(
     name='mvtcr',
     version='0.2.1.2',
