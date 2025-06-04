@@ -63,31 +63,66 @@ def load_data(source='10x'):
 
 @check_if_input_is_mudata
 def load_model(adata, path_model):
-    available_gpu = torch.cuda.is_available()
-
-    if available_gpu:
-        model_file = torch.load(path_model, weights_only=False)
-    else:
-        print('Warning: cuda not available, loading model on CPU')
-        model_file = torch.load(path_model, map_location=torch.device('cpu'), weights_only=False) 
-
+    # Determine the appropriate device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    # Load the model file with the specified device
+    model_file = torch.load(path_model, map_location=device, weights_only=False)
+    
+    # Extract necessary parameters from the loaded file
     params_architecture = model_file['params_architecture']
     balanced_sampling = model_file['balanced_sampling']
     metadata = model_file['metadata']
     conditional = model_file['conditional']
     optimization_mode_params = model_file['optimization_mode_params']
     label_key = model_file['label_key']
-
-    model_class = select_model_by_name(model_file['model_type'])
-    model = model_class(adata, params_architecture, balanced_sampling, metadata, conditional,
-                        optimization_mode_params, label_key)
     
-    if available_gpu:
-        model.load(path_model, weights_only=False)
-    else:
-        model.load(path_model, map_location=torch.device('cpu'), weights_only=False)
-        
+    # Select and initialize the model class
+    model_class = select_model_by_name(model_file['model_type'])
+    model = model_class(
+        adata,
+        params_architecture,
+        balanced_sampling,
+        metadata,
+        conditional,
+        optimization_mode_params,
+        label_key
+    )
+    
+    # Load the model's state dictionary
+    model.load_state_dict(model_file['state_dict'])
+    
+    # Move the model to the appropriate device
+    model.to(device)
+    
     return model
+    
+# def load_model(adata, path_model):
+#     available_gpu = torch.cuda.is_available()
+
+#     if available_gpu:
+#         model_file = torch.load(path_model, weights_only=False)
+#     else:
+#         print('Warning: cuda not available, loading model on CPU')
+#         model_file = torch.load(path_model, map_location=torch.device('cpu'), weights_only=False) 
+
+#     params_architecture = model_file['params_architecture']
+#     balanced_sampling = model_file['balanced_sampling']
+#     metadata = model_file['metadata']
+#     conditional = model_file['conditional']
+#     optimization_mode_params = model_file['optimization_mode_params']
+#     label_key = model_file['label_key']
+
+#     model_class = select_model_by_name(model_file['model_type'])
+#     model = model_class(adata, params_architecture, balanced_sampling, metadata, conditional,
+#                         optimization_mode_params, label_key)
+    
+#     if available_gpu:
+#         model.load(path_model, weights_only=False)
+#     else:
+#         model.load(path_model, map_location=torch.device('cpu'), weights_only=False)
+        
+#     return model
 
 
 def initialize_comet(params_architecture, params_experiment):
