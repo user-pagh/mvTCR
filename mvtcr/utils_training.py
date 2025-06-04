@@ -66,10 +66,10 @@ def load_model(adata, path_model):
     available_gpu = torch.cuda.is_available()
 
     if available_gpu:
-        model_file = torch.load(path_model)
+        model_file = torch.load(path_model, weights_only=False)
     else:
         print('Warning: cuda not available, loading model on CPU')
-        model_file = torch.load(path_model, map_location=torch.device('cpu'))
+        model_file = torch.load(path_model, map_location=torch.device('cpu'), weights_only=False) 
 
     params_architecture = model_file['params_architecture']
     balanced_sampling = model_file['balanced_sampling']
